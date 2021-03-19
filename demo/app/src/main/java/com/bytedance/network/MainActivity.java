@@ -7,13 +7,16 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bytedance.network.api.GitHubService;
+import com.bytedance.network.model.Course;
 import com.bytedance.network.model.Repo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -27,14 +30,18 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "network_demo";
+
     private final Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://api.github.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build();
+
     private int page = 0;
     private String content = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,7 +56,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_retrofit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requestRetrofit("JakeWharton");
+                //requestRetrofitSync("JakeWharton");
+                requestRetrofitAsync("JakeWharton");
             }
         });
 
@@ -60,10 +68,24 @@ public class MainActivity extends AppCompatActivity {
                 page = 0;
             }
         });
+
+//        GitHubService service = new GitHubService() {
+//            @Override
+//            public Call<List<Repo>> getRepos(String userName, int page, int perPage, String accept) {
+//                //这里用了动态代理的技术，
+//                // 将传入的参数配置好，进行http请求，并将结果用GsonConvert转成List<Repo>对象
+//                return response;
+//            }
+//        };
+
     }
 
-    private void showRepos(List<Repo> repoList){
-        Log.d(TAG,"repo list add "+repoList.size());
+    /**
+     * 更新UI
+     * @param repoList
+     */
+    private void showRepos(List<Repo> repoList) {
+        Log.d(TAG, "repo list add " + repoList.size());
         StringBuilder stringBuilder = new StringBuilder(content);
         for (int i = 0; i < repoList.size(); i++) {
             final Repo repo = repoList.get(i);
@@ -78,6 +100,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * 基础方法（URLConnection）请求服务器
+     * @param userName
+     */
     private void requestBase(final String userName){
         new Thread(new Runnable() {
             @Override
@@ -97,34 +123,83 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    public List<Repo> baseGetReposFromRemote(String userName){
-        String urlStr = String.format("https://api.github.com/users/%s/repos?page=%d&per_page=10",userName,page);
+    public List<Repo> baseGetReposFromRemote(String userName) {
+        String urlStr = String.format("https://api.github.com/users/%s/repos?page=%d&per_page=10", userName, page);
         List<Repo> result = null;
         try {
             URL url = new URL(urlStr);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(6000);
-            conn.connect();
-            InputStream in = conn.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            result = new Gson().fromJson(reader, new TypeToken<List<Repo>>() {}.getType());
-            reader.close();
-            in.close();
+
+            conn.setRequestMethod("GET");
+
+            conn.setRequestProperty("accept","application/vnd.github.v3+json");
+
+            if (conn.getResponseCode() == 200) {
+
+                InputStream in = conn.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+
+                result = new Gson().fromJson(reader, new TypeToken<List<Repo>>() {}.getType());
+
+                reader.close();
+                in.close();
+
+            } else {
+                // 错误处理
+            }
             conn.disconnect();
 
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(this, "网络异常" + e.toString(), Toast.LENGTH_SHORT).show();
         }
         return result;
     }
 
-    private void requestRetrofit(String userName) {
+    /**
+     * Retrofit 同步方法请求
+     * @param userName
+     */
+    private void requestRetrofitSync(final String userName){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GitHubService service = retrofit.create(GitHubService.class);
+                Call<List<Repo>> call = service.getRepos(userName, page, 10,"application/vnd.github.v3+json");
+                try {
+                    Response<List<Repo>> response = call.execute();
+                    if (response.isSuccessful() && !response.body().isEmpty()){
+                        page++;
+                        new Handler(getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                showRepos(response.body());
+                            }
+                        });
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+    }
+
+
+    /**
+     * Retrofit异步方法请求
+     * @param userName
+     */
+    private void requestRetrofitAsync(String userName) {
 
         GitHubService service = retrofit.create(GitHubService.class);
 
-        Call<List<Repo>> repos = service.getRepos(userName,page,10);
+        Call<List<Repo>> repos = service.getRepos(userName, page, 10,"application/vnd.github.v3+json");
         repos.enqueue(new Callback<List<Repo>>() {
-            @Override public void onResponse(final Call<List<Repo>> call, final Response<List<Repo>> response) {
+            @Override
+            public void onResponse(final Call<List<Repo>> call, final Response<List<Repo>> response) {
                 if (!response.isSuccessful()) {
                     return;
                 }
@@ -136,7 +211,8 @@ public class MainActivity extends AppCompatActivity {
                 showRepos(repoList);
             }
 
-            @Override public void onFailure(final Call<List<Repo>> call, final Throwable t) {
+            @Override
+            public void onFailure(final Call<List<Repo>> call, final Throwable t) {
                 t.printStackTrace();
             }
         });
