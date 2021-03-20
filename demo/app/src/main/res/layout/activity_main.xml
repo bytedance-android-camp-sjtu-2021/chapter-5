@@ -34,6 +34,13 @@
             android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:text="清除" />
+        <Button
+            android:id="@+id/socket"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="socket" />
     </LinearLayout>
 
     <ScrollView
