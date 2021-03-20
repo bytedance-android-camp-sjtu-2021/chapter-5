@@ -61,27 +61,4 @@ public class SocketTestActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    // 获取本机IPv4地址
-    public static String getLocalHostIp() {
-        String ipaddress = "";
-        try {
-            Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
-            // 遍历所用的网络接口
-            while (en.hasMoreElements()) {
-                NetworkInterface nif = en.nextElement();// 得到每一个网络接口绑定的所有ip
-                Enumeration<InetAddress> inet = nif.getInetAddresses();
-                // 遍历每一个接口绑定的所有ip
-                while (inet.hasMoreElements()) {
-                    InetAddress ip = inet.nextElement();
-                    if (!ip.isLoopbackAddress() && ip instanceof Inet4Address) {
-                        return ipaddress = ip.getHostAddress();
-                    }
-                }
-            }
-        } catch (SocketException e) {
-            System.out.print("获取IP失败");
-            e.printStackTrace();
-        }
-        return ipaddress;
-    }
 }

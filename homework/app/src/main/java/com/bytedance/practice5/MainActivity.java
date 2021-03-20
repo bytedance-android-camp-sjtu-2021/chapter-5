@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+
+import com.bytedance.practice5.socket.SocketActivity;
 import com.facebook.drawee.backends.pipeline.Fresco;
 
 
@@ -40,6 +42,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 getData(null);
+            }
+        });
+        findViewById(R.id.btn_socket).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SocketActivity.class);
+                startActivity(intent);
             }
         });
 
