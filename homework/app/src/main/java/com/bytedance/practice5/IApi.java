@@ -19,5 +19,6 @@ public interface IApi {
                                      MultipartBody.Part from,
                                      MultipartBody.Part to,
                                      MultipartBody.Part content,
-                                     MultipartBody.Part image);
+                                     MultipartBody.Part image,
+                                     String token);
 }
