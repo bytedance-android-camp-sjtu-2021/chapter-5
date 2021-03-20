@@ -27,6 +27,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import okhttp3.Request;
+import okio.Timeout;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -82,8 +84,15 @@ public class MainActivity extends AppCompatActivity {
 //            @Override
 //            public Call<List<Repo>> getRepos(String userName, int page, int perPage, String accept) {
 //                //这里用了动态代理的技术，
-//                // 将传入的参数配置好，进行http请求，并将结果用GsonConvert转成List<Repo>对象
-//                return response;
+//
+//                Call<Response> call = new Call() {
+//                    @Override
+//                    public Response execute() throws IOException {
+//                        // 这个方法将传入的参数配置好，进行http请求，并将结果用GsonConvert转成List<Repo>对象
+//                        return response;
+//                    }
+//                };
+//                return call;
 //            }
 //        };
 
