@@ -57,7 +57,9 @@ public class SocketTestActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         serverListener.stopServer();
-        sendThread.disconnect();
+        if (sendThread!=null){
+            sendThread.disconnect();
+        }
         super.onDestroy();
     }
 
