@@ -119,8 +119,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void socketdemo() {
-    }
 
     /**
      * 基础方法（URLConnection）请求服务器
@@ -180,7 +178,12 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "网络异常" + e.toString(), Toast.LENGTH_SHORT).show();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "网络异常" + e.toString(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         return result;
     }
