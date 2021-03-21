@@ -10,7 +10,7 @@ import java.net.DatagramSocket;
 import java.net.Socket;
 
 public class ClientSocketThread extends Thread {
-    String content = "HEAD /xxjj/index.html HTTP/1.1\r\nHost:www.sjtu.edu.cn\r\n\r\n";
+//    String content = "HEAD /xxjj/index.html HTTP/1.1\r\nHost:www.sjtu.edu.cn\r\n\r\n";
     public ClientSocketThread(Activity activity) {
         this.activity = activity;
     }
@@ -20,7 +20,7 @@ public class ClientSocketThread extends Thread {
     private volatile String message = "";
 
     public synchronized void sendMsg(String msg) {
-        this.message = content;
+        this.message = msg;
     }
 
     public void disconnect() {
@@ -35,7 +35,9 @@ public class ClientSocketThread extends Thread {
     public void run() {
         Log.d("socket", "客户端线程start ");
         try {
-            Socket socket = new Socket("www.sjtu.edu.cn", 80); //服务器IP及端口
+//            Socket socket = new Socket("www.sjtu.edu.cn", 80); //服务器IP及端口
+            Socket socket = new Socket("localhost", 30000); //服务器IP及端口
+
             BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
             BufferedInputStream is = new BufferedInputStream(socket.getInputStream());
             // 读文件
